@@ -26,6 +26,7 @@ func compareToJSON(t *testing.T, yamlPath string) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer jsonFile.Close()
 
 	decoder := json.NewDecoder(jsonFile)
 	var vj interface{}
