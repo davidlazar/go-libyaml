@@ -1,3 +1,4 @@
+// Package yaml loads YAML documents using libyaml.
 package yaml
 
 /*
