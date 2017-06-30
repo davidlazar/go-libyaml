@@ -56,10 +56,10 @@ func Load(data []byte) (interface{}, error) {
 	}
 
 	root := C.yaml_document_get_root_node(document)
-	return LoadNode(document, root), nil
+	return loadNode(document, root), nil
 }
 
-func LoadNode(document *C.yaml_document_t, node *C.yaml_node_t) interface{} {
+func loadNode(document *C.yaml_document_t, node *C.yaml_node_t) interface{} {
 	if node == nil {
 		return nil
 	}
@@ -85,7 +85,7 @@ func LoadNode(document *C.yaml_document_t, node *C.yaml_node_t) interface{} {
 		for i := start; i < end; i += off {
 			item := (*C.int)(unsafe.Pointer(i))
 			itemNode := C.yaml_document_get_node(document, *item)
-			elem := LoadNode(document, itemNode)
+			elem := loadNode(document, itemNode)
 			rseq = append(rseq, elem)
 		}
 
@@ -104,8 +104,8 @@ func LoadNode(document *C.yaml_document_t, node *C.yaml_node_t) interface{} {
 
 			keyNode := C.yaml_document_get_node(document, pair.key)
 			valNode := C.yaml_document_get_node(document, pair.value)
-			key := LoadNode(document, keyNode)
-			val := LoadNode(document, valNode)
+			key := loadNode(document, keyNode)
+			val := loadNode(document, valNode)
 
 			rmap[key.(string)] = val
 		}
