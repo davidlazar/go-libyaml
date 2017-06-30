@@ -1,7 +1,18 @@
 package yaml
 
-// #cgo LDFLAGS: -lyaml
-// #include <yaml.h>
+/*
+#cgo LDFLAGS: -lyaml
+#include <yaml.h>
+
+int load_doc(const unsigned char *input, size_t size, yaml_document_t *document) {
+	yaml_parser_t parser;
+
+	yaml_parser_initialize(&parser);
+	yaml_parser_set_input_string(&parser, input, size);
+
+	return yaml_parser_load(&parser, document);
+}
+*/
 import "C"
 import "errors"
 import "unsafe"
@@ -36,17 +47,16 @@ func Load(data []byte) (interface{}, error) {
 		return nil, nil
 	}
 
-	var parser C.yaml_parser_t
-	var document C.yaml_document_t
+	document := (*C.yaml_document_t)(C.malloc(C.sizeof_yaml_document_t))
+	defer C.yaml_document_delete(document)
 
-	C.yaml_parser_initialize(&parser)
-	C.yaml_parser_set_input_string(&parser, (*C.uchar)(unsafe.Pointer(&data[0])), C.size_t(len(data)))
-	if ok := C.yaml_parser_load(&parser, &document); ok != 1 {
+	ok := C.load_doc((*C.uchar)(unsafe.Pointer(&data[0])), C.size_t(len(data)), document)
+	if ok != 1 {
 		return nil, errors.New("failed to parse yaml")
 	}
 
-	root := C.yaml_document_get_root_node(&document)
-	return LoadNode(&document, root), nil
+	root := C.yaml_document_get_root_node(document)
+	return LoadNode(document, root), nil
 }
 
 func LoadNode(document *C.yaml_document_t, node *C.yaml_node_t) interface{} {
